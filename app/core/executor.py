@@ -1,15 +1,18 @@
-from app.tools import DatabaseTool, EmailTool, FileTool
+from typing import Dict, Any
+from app.tools.database_tool import DatabaseTool
+from app.tools.email_tool import EmailTool
+from app.tools.file_tool import FileTool
 
 
 class ToolExecutor:
+    """Executes validated tool actions."""
 
     def __init__(self):
         self.db = DatabaseTool()
         self.email = EmailTool()
         self.file = FileTool()
 
-    def execute(self, request, dry_run=False):
-
+    def execute(self, request: Dict[str, Any], dry_run: bool = False) -> Dict[str, Any]:
         if dry_run:
             return {
                 "status": "DRY_RUN",
@@ -17,18 +20,15 @@ class ToolExecutor:
                 "simulated": True
             }
 
-        tool = request["tool"]
+        tool = request.get("tool")
 
         if tool == "database":
-            return self.db.delete(request["record_count"])
-
+            return self.db.delete(request.get("record_count"))
         elif tool == "email":
-            return self.email.send(request["recipient"])
-
+            return self.email.send(request.get("recipient"))
         elif tool == "file":
-            return self.file.read(request["path"])
+            return self.file.read(request.get("path"))
 
-        # Unknown tool
         return {
             "status": "error",
             "message": f"Unknown tool: {tool}"

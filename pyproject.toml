@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "guardrail-ai"
+version = "1.0.0"
+description = "Runtime Action Guardrail & Policy Enforcement Platform"
+authors = ["Aivar Innovations <info@aivar.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "0.141.1"
+uvicorn = "0.52.0"
+PyYAML = "6.0.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

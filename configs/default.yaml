@@ -1,0 +1,37 @@
+rules:
+
+  - id: block_large_delete
+    tool: database
+    action: delete
+
+    conditions:
+      - field: record_count
+        operator: ">"
+        value: 100
+
+    decision: block
+    message: Delete request exceeds maximum allowed limit (100 records).
+
+  - id: external_email_hitl
+    tool: email
+    action: send
+
+    conditions:
+      - field: external
+        operator: "=="
+        value: true
+
+    decision: require_hitl
+    message: External emails require human approval.
+
+  - id: confidential_file_log
+    tool: file
+    action: read
+
+    conditions:
+      - field: path
+        operator: contains
+        value: confidential
+
+    decision: log_and_allow
+    message: Confidential file access logged for auditing.
