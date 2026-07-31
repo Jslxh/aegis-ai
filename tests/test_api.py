@@ -1,92 +1,72 @@
-import unittest
-import urllib.request
-import json
+"""Legacy API smoke tests rewritten to run against the in-memory TestClient
+instead of a live uvicorn server on localhost:8000."""
+
+import pytest
 
 
-class TestAPI(unittest.TestCase):
-    BASE_URL = "http://localhost:8000"
+@pytest.mark.api
+class TestAPI:
+    def test_root(self, client):
+        res = client.get("/")
+        assert res.status_code == 200
+        assert res.json() == {"message": "Welcome to Guardrail AI"}
 
-    def test_root(self):
-        url = f"{self.BASE_URL}/"
-        response = urllib.request.urlopen(url)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(data, {"message": "Welcome to Guardrail AI"})
+    def test_health(self, client):
+        res = client.get("/health")
+        assert res.status_code == 200
+        assert res.json() == {"status": "healthy"}
 
-    def test_health(self):
-        url = f"{self.BASE_URL}/health"
-        response = urllib.request.urlopen(url)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(data, {"status": "healthy"})
+    def test_policies(self, client, auth_headers_factory):
+        res = client.get("/policies", headers=auth_headers_factory("viewer"))
+        assert res.status_code == 200
+        assert "rules" in res.json()
 
-    def test_policies(self):
-        url = f"{self.BASE_URL}/policies"
-        response = urllib.request.urlopen(url)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertIn("rules", data)
-
-    def test_evaluate_allow(self):
-        url = f"{self.BASE_URL}/evaluate"
-        payload = {"tool": "database", "action": "delete", "record_count": 5}
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"}
+    def test_evaluate_allow(self, client, auth_headers_factory):
+        res = client.post(
+            "/evaluate",
+            json={"tool": "database", "action": "delete", "record_count": 5},
+            headers=auth_headers_factory("operator"),
         )
-        response = urllib.request.urlopen(req)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(data["decision"], "allow")
+        assert res.status_code == 200
+        assert res.json()["decision"] == "allow"
 
-    def test_evaluate_block(self):
-        url = f"{self.BASE_URL}/evaluate"
-        payload = {"tool": "database", "action": "delete", "record_count": 500}
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"}
+    def test_evaluate_block(self, client, auth_headers_factory):
+        res = client.post(
+            "/evaluate",
+            json={"tool": "database", "action": "delete", "record_count": 500},
+            headers=auth_headers_factory("operator"),
         )
-        response = urllib.request.urlopen(req)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(data["decision"], "block")
-        self.assertEqual(data["matched_rule"], "block_large_delete")
+        assert res.status_code == 200
+        body = res.json()
+        assert body["decision"] == "block"
+        assert body["matched_rule"] == "block_large_delete"
 
-    def test_execute_allow(self):
-        url = f"{self.BASE_URL}/execute"
-        payload = {"tool": "database", "action": "delete", "record_count": 5}
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"}
+    def test_execute_allow(self, client, auth_headers_factory):
+        res = client.post(
+            "/execute",
+            json={"tool": "database", "action": "delete", "record_count": 5},
+            headers=auth_headers_factory("operator"),
         )
-        response = urllib.request.urlopen(req)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(data["status"], "executed")
-        self.assertEqual(data["decision"], "allow")
-        self.assertEqual(data["tool_output"]["status"], "success")
+        assert res.status_code == 200
+        body = res.json()
+        assert body["status"] == "executed"
+        assert body["decision"] == "allow"
+        assert body["tool_output"]["status"] == "success"
 
-    def test_execute_block(self):
-        url = f"{self.BASE_URL}/execute"
-        payload = {"tool": "database", "action": "delete", "record_count": 500}
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"}
+    def test_execute_block(self, client, auth_headers_factory):
+        res = client.post(
+            "/execute",
+            json={"tool": "database", "action": "delete", "record_count": 500},
+            headers=auth_headers_factory("operator"),
         )
-        response = urllib.request.urlopen(req)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(data["status"], "blocked")
-        self.assertEqual(data["decision"], "block")
+        assert res.status_code == 200
+        body = res.json()
+        assert body["status"] == "blocked"
+        assert body["decision"] == "block"
 
-    def test_simulate(self):
-        url = f"{self.BASE_URL}/simulate"
-        response = urllib.request.urlopen(url)
-        data = json.loads(response.read().decode())
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(data["simulation"], "completed")
-        self.assertIn("results", data)
+    def test_simulate(self, client, auth_headers_factory):
+        res = client.get("/simulate", headers=auth_headers_factory("operator"))
+        assert res.status_code == 200
+        body = res.json()
+        assert body["simulation"] == "completed"
+        assert "results" in body

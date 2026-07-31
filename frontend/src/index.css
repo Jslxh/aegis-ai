@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 30% 97%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 20% 93%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 20% 93%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 243 75% 96%;
+    --accent-foreground: 243 75% 40%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 14% 88%;
+    --input: 220 14% 82%;
+    --ring: 243 75% 59%;
+    --sidebar: 224 47% 11%;
+    --sidebar-foreground: 220 20% 96%;
+    --sidebar-muted: 224 47% 16%;
+    --success: 152 69% 31%;
+    --warning: 24 94% 50%;
+    --danger: 0 72% 51%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 47% 9%;
+    --foreground: 220 20% 94%;
+    --card: 224 44% 12%;
+    --card-foreground: 220 20% 94%;
+    --popover: 224 44% 12%;
+    --popover-foreground: 220 20% 94%;
+    --primary: 243 75% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 30% 18%;
+    --secondary-foreground: 220 20% 94%;
+    --muted: 224 30% 18%;
+    --muted-foreground: 220 12% 66%;
+    --accent: 243 60% 24%;
+    --accent-foreground: 243 80% 88%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 30% 20%;
+    --input: 224 30% 24%;
+    --ring: 243 75% 64%;
+    --sidebar: 224 47% 7%;
+    --sidebar-foreground: 220 20% 94%;
+    --sidebar-muted: 224 40% 14%;
+    --success: 152 69% 44%;
+    --warning: 32 95% 55%;
+    --danger: 0 72% 55%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-muted-foreground/30;
+  }
+}

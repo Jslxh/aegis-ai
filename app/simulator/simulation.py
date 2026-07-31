@@ -1,15 +1,38 @@
+from typing import Optional, Any, Dict
+from sqlalchemy.orm import Session
 from app.core.guardrail import Guardrail
 from app.core.executor import ToolExecutor
-from app.audit.logger import AuditLogger
+from app.audit.logger import AuditLogger, PostgresAuditLogger
 
 
 class Simulation:
     """Simulation harness to run test scenarios showing all guardrail policy outcomes."""
 
-    def __init__(self):
+    def __init__(self, session_factory: Optional[callable] = None):
         self.guardrail = Guardrail()
         self.executor = ToolExecutor()
-        self.audit = AuditLogger()
+        self.audit = PostgresAuditLogger(session_factory) if session_factory else AuditLogger()
+        self.session_factory = session_factory
+
+    def _persist_run(self, result: Dict[str, Any]) -> None:
+        if not self.session_factory:
+            return
+        from app.database.repositories.simulation_run_repository import SimulationRunRepository
+
+        session: Session = self.session_factory()
+        try:
+            repo = SimulationRunRepository(session)
+            repo.create_run(
+                total_scenarios=result["total_scenarios"],
+                summary=result["summary"],
+                results=result["results"],
+            )
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def run(self) -> dict:
         scenarios = [
@@ -84,7 +107,7 @@ class Simulation:
                 "tool_output": output
             })
 
-        return {
+        result = {
             "simulation": "completed",
             "total_scenarios": len(results),
             "summary": {
@@ -95,3 +118,6 @@ class Simulation:
             },
             "results": results
         }
+
+        self._persist_run(result)
+        return result

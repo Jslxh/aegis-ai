@@ -1,0 +1,36 @@
+# Version control / tooling
+.git
+.github
+.gitignore
+.pytest_cache
+__pycache__
+*.py[cod]
+
+# Virtual environments
+.venv
+venv
+env
+
+# Test suite (not shipped; run inside a dev container via bind mount)
+tests
+
+# Coverage artifacts
+.coverage
+.coverage.*
+htmlcov
+coverage.xml
+
+# Local runtime state
+logs
+*.log
+
+# Secrets (never ship real credentials)
+.env
+.env.*.local
+
+# Docs / IDE
+docs
+README.md
+.idea
+.vscode
+*.swp

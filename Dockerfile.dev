@@ -1,0 +1,40 @@
+# ============================================================================
+# Guardrail AI - Development image
+#
+# Intended for `docker compose up` (see docker-compose.yml). The repo is
+# bind-mounted into /workspace so code changes hot-reload via uvicorn --reload.
+# Includes test tooling (pytest) so the suite can be run inside the container.
+# ============================================================================
+
+FROM python:3.10-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    HOST=0.0.0.0 \
+    PORT=8000
+
+WORKDIR /workspace
+
+# App dependencies first so rebuilds reuse the layer.
+COPY requirements.txt .
+RUN python -m venv /opt/venv \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Test tooling for local development.
+COPY requirements-dev.txt .
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+COPY . .
+
+RUN mkdir -p /workspace/logs \
+    && chmod +x /workspace/docker-entrypoint.sh
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=3)"]
+
+ENTRYPOINT ["/workspace/docker-entrypoint.sh"]
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

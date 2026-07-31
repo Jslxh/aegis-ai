@@ -11,6 +11,11 @@ def compare(request_value: Any, operator: str, rule_value: Any) -> bool:
             rule_value = type(request_value)(rule_value)
         except (ValueError, TypeError):
             pass
+    elif isinstance(rule_value, (int, float)) and not isinstance(request_value, (int, float)):
+        try:
+            request_value = type(rule_value)(request_value)
+        except (ValueError, TypeError):
+            pass
 
     if operator == ">":
         return request_value > rule_value

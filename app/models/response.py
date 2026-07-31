@@ -14,6 +14,9 @@ class ExecutionResult(BaseModel):
     matched_rule: Optional[str] = Field(default=None, description="The matched rule ID")
     reason: Optional[str] = Field(default=None, description="The decision reason or rule message")
     tool_output: Optional[Dict[str, Any]] = Field(default=None, description="The raw output returned from executing the tool")
+    correlation_id: Optional[str] = Field(default=None, description="Trace ID linking audit/history/metrics for this request")
+    request_id: Optional[str] = Field(default=None, description="Unique ID for this API request")
+    execution_id: Optional[str] = Field(default=None, description="Unique ID for this tool execution")
 
 
 class ScenarioResult(BaseModel):
@@ -24,6 +27,18 @@ class ScenarioResult(BaseModel):
     reason: Optional[str] = None
     executed: bool
     tool_output: Dict[str, Any]
+
+
+class DryRunResult(BaseModel):
+    decision: str
+    matched_rule: Optional[str] = None
+    reason: Optional[str] = None
+    would_execute: bool
+    would_block: bool
+    would_require_hitl: bool
+    risk_level: str
+    audit_preview: Dict[str, Any]
+    simulated_output: Optional[Dict[str, Any]] = None
 
 
 class SimulationResult(BaseModel):

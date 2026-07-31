@@ -9,7 +9,42 @@ python = "^3.10"
 fastapi = "0.141.1"
 uvicorn = "0.52.0"
 PyYAML = "6.0.3"
+groq = "0.19.0"
+python-dotenv = "1.1.0"
+sqlalchemy = "2.0.40"
+alembic = "1.15.2"
+psycopg2-binary = "2.9.10"
+prometheus-client = "0.26.0"
+opentelemetry-api = ">=1.24"
+opentelemetry-sdk = ">=1.24"
+opentelemetry-exporter-otlp-proto-http = ">=1.24"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning:fastapi.*",
+    "ignore::DeprecationWarning:pydantic.*",
+]
+markers = [
+    "unit: fast, pure unit tests",
+    "repo: repository tests against an in-memory SQLite database",
+    "api: HTTP API tests through the FastAPI TestClient",
+    "integration: end-to-end flows across services",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+omit = [
+    "app/main.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 90
