@@ -2,12 +2,10 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   ShieldCheck,
-  Activity,
   ClipboardCheck,
   ScrollText,
   FlaskConical,
   BarChart3,
-  Network,
   Sparkles,
   Settings,
   X,

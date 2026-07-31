@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { api, getErrorMessage } from "../lib/api";
 import { PageHeader } from "../components/shared/PageHeader.jsx";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
