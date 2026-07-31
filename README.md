@@ -266,3 +266,10 @@ Aegis AI enforces role-based access controls to segregate operations, audits, an
 2. **operator:** Authorized to execute permitted actions (`POST /execute`) and run pipeline tests.
 3. **auditor:** Granted full access to review suspended actions (`PgApprovalQueue`), approve/reject execution tickets, query the Audit ledger, and run cryptographic verification checks.
 4. **admin:** Allowed to directly configure, update, and deploy declarative policy YAML rules to the live policy engines.
+
+---
+
+## 📄 License
+
+Proprietary. Jslxh. All rights reserved.
+

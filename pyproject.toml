@@ -2,7 +2,7 @@
 name = "guardrail-ai"
 version = "1.0.0"
 description = "Runtime Action Guardrail & Policy Enforcement Platform"
-authors = ["Aivar Innovations <info@aivar.com>"]
+authors = ["Jslxh"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
