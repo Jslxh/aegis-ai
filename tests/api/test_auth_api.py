@@ -218,3 +218,59 @@ class TestLogout:
             headers=auth_headers_factory("admin"),
         )
         assert res.status_code == 200
+
+
+@pytest.mark.api
+class TestChangePassword:
+    def test_change_password_success(self, client, auth_headers_factory):
+        res = client.post(
+            "/auth/change-password",
+            json={"current_password": TEST_PASSWORD, "new_password": "new_secret_pass"},
+            headers=auth_headers_factory("viewer"),
+        )
+        assert res.status_code == 200
+        # Verify old login fails
+        assert _login(client, username="viewer", password=TEST_PASSWORD).status_code == 401
+        # Verify new login succeeds
+        assert _login(client, username="viewer", password="new_secret_pass").status_code == 200
+
+    def test_change_password_incorrect_current(self, client, auth_headers_factory):
+        res = client.post(
+            "/auth/change-password",
+            json={"current_password": "incorrect_pass", "new_password": "new_secret_pass"},
+            headers=auth_headers_factory("viewer"),
+        )
+        assert res.status_code == 400
+
+
+@pytest.mark.api
+class TestPasswordReset:
+    def test_forgot_password_success(self, client, session_factory):
+        res = client.post("/auth/forgot-password", json={"identity": "admin"})
+        assert res.status_code == 200
+        
+        session = session_factory()
+        try:
+            repo = UserRepository(session)
+            user = repo.find_by_username("admin")
+            assert user.reset_token is not None
+            assert user.reset_token_expires_at is not None
+            
+            # Now reset using that token
+            reset_res = client.post(
+                "/auth/reset-password",
+                json={"token": user.reset_token, "new_password": "brand_new_pass"}
+            )
+            assert reset_res.status_code == 200
+            
+            # Verify new login works
+            assert _login(client, username="admin", password="brand_new_pass").status_code == 200
+        finally:
+            session.close()
+
+    def test_reset_password_invalid_token(self, client):
+        res = client.post(
+            "/auth/reset-password",
+            json={"token": "fake_token", "new_password": "brand_new_pass"}
+        )
+        assert res.status_code == 400

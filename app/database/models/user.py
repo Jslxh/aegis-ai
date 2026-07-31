@@ -13,5 +13,7 @@ class UserModel(Base):
     hashed_password = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default="viewer")
     is_active = Column(Boolean, nullable=False, default=True)
+    reset_token = Column(String(255), nullable=True, index=True)
+    reset_token_expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)

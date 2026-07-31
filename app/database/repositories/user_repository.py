@@ -25,6 +25,13 @@ class UserRepository(BaseRepository[UserModel]):
             .first()
         )
 
+    def find_by_reset_token(self, token: str) -> Optional[UserModel]:
+        return (
+            self.session.query(UserModel)
+            .filter(UserModel.reset_token == token)
+            .first()
+        )
+
     def create_user(
         self,
         username: str,

@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI
+from mangum import Mangum
 from app.api.routes import router
 from app.api import ai_routes
 from app.api.auth_routes import router as auth_router
@@ -112,3 +113,5 @@ def on_startup():
 
 
 __all__ = ["app", "policy_engine", "guardrail", "executor", "audit", "simulation"]
+
+handler = Mangum(app)

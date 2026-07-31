@@ -3,8 +3,11 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+import secrets
+
 from app.auth.security import (
     verify_password,
+    hash_password,
     create_access_token,
     create_refresh_token,
     decode_token,
@@ -21,7 +24,11 @@ from app.models.auth import (
     LoginRequest,
     TokenResponse,
     RefreshRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    ChangePasswordRequest,
 )
+from app.services.email_service import send_password_reset_email
 from app.observability import emit_security_event
 from app.observability.security import (
     LOGIN_SUCCESS,
@@ -235,3 +242,67 @@ def logout(
     )
 
     return {"detail": "Logged out successfully"}
+
+
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    repo = UserRepository(db)
+    user = repo.get(current_user["id"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+
+    user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"detail": "Password updated successfully"}
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    payload: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    repo = UserRepository(db)
+    user = repo.find_by_username(payload.identity)
+    if not user:
+        user = repo.find_by_email(payload.identity)
+
+    if user:
+        token = secrets.token_urlsafe(32)
+        user.reset_token = token
+        user.reset_token_expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
+        db.commit()
+
+        reset_link = f"http://localhost:5173/reset-password?token={token}"
+        send_password_reset_email(user.email, user.username, reset_link)
+
+    return {"detail": "If a matching account exists, a password reset link has been sent."}
+
+
+@router.post("/reset-password")
+def reset_password(
+    payload: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    repo = UserRepository(db)
+    user = repo.find_by_reset_token(payload.token)
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    if not user.reset_token_expires_at or user.reset_token_expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
+        user.reset_token = None
+        user.reset_token_expires_at = None
+        db.commit()
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    user.hashed_password = hash_password(payload.new_password)
+    user.reset_token = None
+    user.reset_token_expires_at = None
+    db.commit()
+    return {"detail": "Password reset successfully"}

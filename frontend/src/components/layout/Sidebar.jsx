@@ -26,6 +26,7 @@ const NAV_GROUPS = [
       { to: "/approvals", label: "Approvals", icon: ClipboardCheck, roles: ["auditor"] },
       // { to: "/runtime", label: "Runtime Monitor", icon: Activity, roles: ["viewer"] },
       { to: "/audit", label: "Audit Center", icon: ScrollText, roles: ["auditor"] },
+      { to: "/settings", label: "Settings", icon: Settings, roles: ["viewer"] },
     ],
   },
   {

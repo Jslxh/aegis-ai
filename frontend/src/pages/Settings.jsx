@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, UserPlus, Moon, Sun, Loader2 } from "lucide-react";
+import { Settings as SettingsIcon, UserPlus, Moon, Sun, Loader2, Key } from "lucide-react";
 import { PageHeader } from "../components/shared/PageHeader.jsx";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -18,13 +18,41 @@ const ROLES = ["viewer", "operator", "auditor", "security_analyst", "admin"];
 export default function Settings() {
   const { user, hasRole } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  
+  // Form for creating users (admin only)
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm();
+  
+  // Form for changing password (any logged-in user)
+  const {
+    register: registerCP,
+    handleSubmit: handleSubmitCP,
+    reset: resetCP,
+    formState: { isSubmitting: isSubmittingCP, errors: errorsCP },
+    watch: watchCP,
+  } = useForm();
 
   async function onCreateUser(values) {
     try {
       await api.post("/auth/register", values);
       toast.success(`User "${values.username}" created`);
       reset();
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  }
+
+  async function onChangePassword(values) {
+    if (values.new_password !== values.confirm_password) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    try {
+      await api.post("/auth/change-password", {
+        current_password: values.current_password,
+        new_password: values.new_password,
+      });
+      toast.success("Password updated successfully");
+      resetCP();
     } catch (err) {
       toast.error(getErrorMessage(err));
     }
@@ -84,6 +112,64 @@ export default function Settings() {
                 Switch to {theme === "dark" ? "light" : "dark"}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Change Password</CardTitle>
+            <CardDescription>Update your account security details.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmitCP(onChangePassword)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current_password">Current Password</Label>
+                <Input
+                  id="current_password"
+                  type="password"
+                  placeholder="••••••••"
+                  {...registerCP("current_password", { required: "Current password is required" })}
+                />
+                {errorsCP.current_password && (
+                  <p className="text-xs text-destructive">{errorsCP.current_password.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new_password">New Password</Label>
+                <Input
+                  id="new_password"
+                  type="password"
+                  placeholder="Minimum 8 characters"
+                  {...registerCP("new_password", { 
+                    required: "New password is required",
+                    minLength: { value: 8, message: "New password must be at least 8 characters" }
+                  })}
+                />
+                {errorsCP.new_password && (
+                  <p className="text-xs text-destructive">{errorsCP.new_password.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm_password">Confirm New Password</Label>
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  placeholder="••••••••"
+                  {...registerCP("confirm_password", { 
+                    required: "Please confirm your new password",
+                    validate: value => value === watchCP("new_password") || "Passwords do not match"
+                  })}
+                />
+                {errorsCP.confirm_password && (
+                  <p className="text-xs text-destructive">{errorsCP.confirm_password.message}</p>
+                )}
+              </div>
+              <Button type="submit" disabled={isSubmittingCP} className="w-full">
+                {isSubmittingCP && <Loader2 className="animate-spin mr-2" />}
+                <Key className="mr-2 h-4 w-4" />
+                Change Password
+              </Button>
+            </form>
           </CardContent>
         </Card>
 

@@ -16,7 +16,8 @@ const Analytics = lazy(() => import("./pages/Analytics.jsx"));
 // const Architecture = lazy(() => import("./pages/Architecture.jsx"));
 const AIExplainability = lazy(() => import("./pages/AIExplainability.jsx"));
 const Chatbot = lazy(() => import("./pages/Chatbot.jsx"));
-// const Settings = lazy(() => import("./pages/Settings.jsx"));
+const Settings = lazy(() => import("./pages/Settings.jsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
       <Suspense fallback={<PageLoading />}>
         <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route element={<ProtectedRoute requiredRole="viewer" />}>
           <Route element={<AppLayout />}>
@@ -37,7 +39,7 @@ export default function App() {
             {/* <Route path="/architecture" element={<Architecture />} /> */}
             <Route path="/ai" element={<AIExplainability />} />
             <Route path="/chat" element={<Chatbot />} />
-            {/* <Route path="/settings" element={<Settings />} /> */}
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
 

@@ -24,4 +24,4 @@ ENV PYTHONUNBUFFERED=1 \
     ENVIRONMENT=production
 
 # Define Lambda handler entrypoint
-CMD ["app.lambda_handler.handler"]
+CMD ["app.main.handler"]

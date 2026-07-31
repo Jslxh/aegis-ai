@@ -1,4 +1,5 @@
-import { Menu, Moon, Sun, LogOut, ShieldCheck } from "lucide-react";
+import { Menu, Moon, Sun, LogOut, ShieldCheck, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { ROLE_META } from "../../lib/status";
@@ -8,6 +9,7 @@ import { useTheme } from "../../hooks/use-theme";
 export function Topbar({ onMenuClick }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const roleMeta = ROLE_META[user?.role] || { label: user?.role, variant: "secondary" };
 
   return (
@@ -38,6 +40,9 @@ export function Topbar({ onMenuClick }) {
             </Badge>
           </div>
         </div>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/settings")} aria-label="Settings">
+          <Settings className="h-4 w-4" />
+        </Button>
         <Button variant="ghost" size="icon" onClick={() => logout()} aria-label="Sign out">
           <LogOut className="h-4 w-4" />
         </Button>

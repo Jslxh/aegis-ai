@@ -2,6 +2,8 @@ service: aegis-ai
 
 frameworkVersion: '3'
 
+useDotenv: true
+
 provider:
   name: aws
   runtime: python3.12
@@ -10,12 +12,12 @@ provider:
   timeout: 30
   memorySize: 1024
   environment:
-    DATABASE_URL: ${env:DATABASE_URL}
-    GROQ_API_KEY: ${env:GROQ_API_KEY}
-    SMTP_SERVER: ${env:SMTP_SERVER}
-    SMTP_PORT: ${env:SMTP_PORT}
-    SMTP_USER: ${env:SMTP_USER}
-    SMTP_PASSWORD: ${env:SMTP_PASSWORD}
+    DATABASE_URL: ${env:DATABASE_URL, ''}
+    GROQ_API_KEY: ${env:GROQ_API_KEY, ''}
+    SMTP_SERVER: ${env:SMTP_SERVER, ''}
+    SMTP_PORT: ${env:SMTP_PORT, ''}
+    SMTP_USER: ${env:SMTP_USER, ''}
+    SMTP_PASSWORD: ${env:SMTP_PASSWORD, ''}
     INTERNAL_DOMAIN: ${env:INTERNAL_DOMAIN, '@company.com'}
 
   ecr:
