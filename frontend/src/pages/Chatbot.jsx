@@ -129,7 +129,7 @@ export default function Chatbot() {
   return (
     <div className="flex flex-col space-y-6 h-[calc(100vh-8rem)]">
       <PageHeader
-        title="AI Chatbot Copilot"
+        title="AI Chatbot"
         description="Issue conversational action requests and view real-time safety policy enforcement."
         icon={MessageSquare}
       />
